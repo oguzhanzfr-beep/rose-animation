@@ -1,0 +1,339 @@
+
+
+<!DOCTYPE html>
+
+<html lang="tr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Seni Seviyorum Havin</title>
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{background:#020202;overflow:hidden}
+
+canvas{display:block;width:100vw;height:100vh}
+
+button{
+
+position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+
+background:#090909;border:1px solid #8b1828;color:#ff5268;
+
+padding:12px 25px;border-radius:30px;letter-spacing:3px;
+
+font-family:monospace
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="c"></canvas>
+
+<button onclick="start()">YENİDEN İZLE</button>
+
+<script>
+
+const canvas=document.getElementById("c");
+
+const ctx=canvas.getContext("2d");
+
+const mask=document.createElement("canvas");
+
+mask.width=500;mask.height=700;
+
+const m=mask.getContext("2d");
+
+let particles=[],startTime=0,animationId;
+
+function rose(){
+
+m.clearRect(0,0,500,700);
+
+function petal(path,c1,c2,c3){
+
+let g=m.createLinearGradient(100,50,390,300);
+
+g.addColorStop(0,c1);g.addColorStop(.5,c2);g.addColorStop(1,c3);
+
+m.fillStyle=g;m.fill(path);
+
+}
+
+let p=new Path2D();
+
+p.moveTo(250,275);
+
+p.bezierCurveTo(115,300,65,205,115,125);
+
+p.bezierCurveTo(145,55,215,50,250,110);
+
+p.bezierCurveTo(300,40,390,75,395,155);
+
+p.bezierCurveTo(440,245,340,300,250,275);
+
+petal(p,"#ff7777","#ed1838","#650012");
+
+p=new Path2D();
+
+p.moveTo(250,265);
+
+p.bezierCurveTo(115,240,130,110,190,90);
+
+p.bezierCurveTo(235,75,270,145,250,185);
+
+p.bezierCurveTo(210,210,220,245,250,265);
+
+petal(p,"#ffaaaa","#e60029","#700016");
+
+p=new Path2D();
+
+p.moveTo(250,265);
+
+p.bezierCurveTo(270,145,340,85,370,145);
+
+p.bezierCurveTo(405,225,330,265,250,265);
+
+petal(p,"#ff8888","#bd001d","#53000e");
+
+p=new Path2D();
+
+p.moveTo(250,250);
+
+p.bezierCurveTo(160,205,175,125,220,135);
+
+p.bezierCurveTo(270,140,285,210,250,250);
+
+petal(p,"#ffaaaa","#e90030","#790018");
+
+p=new Path2D();
+
+p.moveTo(250,225);
+
+p.bezierCurveTo(205,185,220,120,260,135);
+
+p.bezierCurveTo(310,150,290,205,250,225);
+
+petal(p,"#ff7777","#b90022","#4b000c");
+
+p=new Path2D();
+
+p.moveTo(250,205);
+
+p.bezierCurveTo(220,180,225,145,255,150);
+
+p.bezierCurveTo(285,150,290,180,265,192);
+
+p.bezierCurveTo(245,205,240,180,255,173);
+
+p.bezierCurveTo(270,170,275,185,260,195);
+
+petal(p,"#ffb2a5","#ff173d","#760012");
+
+m.fillStyle="#087b32";
+
+p=new Path2D();
+
+p.moveTo(190,260);p.lineTo(165,300);
+
+p.lineTo(225,280);p.lineTo(250,315);
+
+p.lineTo(280,280);p.lineTo(340,300);
+
+p.lineTo(305,255);p.closePath();m.fill(p);
+
+let g=m.createLinearGradient(230,0,270,0);
+
+g.addColorStop(0,"#003d17");
+
+g.addColorStop(.45,"#29d65a");
+
+g.addColorStop(1,"#00551b");
+
+m.strokeStyle=g;m.lineWidth=13;m.lineCap="round";
+
+m.beginPath();m.moveTo(250,300);
+
+m.bezierCurveTo(225,390,280,470,250,630);m.stroke();
+
+p=new Path2D();
+
+p.moveTo(258,425);
+
+p.bezierCurveTo(305,345,405,360,390,425);
+
+p.bezierCurveTo(360,480,295,460,258,425);
+
+let yellow=m.createLinearGradient(260,370,390,450);
+
+yellow.addColorStop(0,"#fff9a0");
+
+yellow.addColorStop(.5,"#ffdf00");
+
+yellow.addColorStop(1,"#a87900");
+
+m.fillStyle=yellow;m.fill(p);
+
+m.strokeStyle="#a47b00";m.lineWidth=2;
+
+m.beginPath();m.moveTo(258,425);
+
+m.quadraticCurveTo(320,405,390,425);m.stroke();
+
+}
+
+function resize(){
+
+canvas.width=innerWidth;
+
+canvas.height=innerHeight;
+
+}
+
+function createParticles(){
+
+particles=[];
+
+const data=m.getImageData(0,0,500,700).data;
+
+const scale=Math.min((canvas.width-30)/500,(canvas.height-140)/730);
+
+const ox=(canvas.width-500*scale)/2;
+
+const oy=(canvas.height-700*scale)/2-30;
+
+for(let y=0;y<700;y+=3){
+
+for(let x=0;x<500;x+=3){
+
+let i=(y*500+x)*4;
+
+if(data[i+3]>100){
+
+particles.push({
+
+x:ox+x*scale,y:oy+y*scale,
+
+sx:Math.random()*canvas.width,
+
+sy:-Math.random()*canvas.height*1.5,
+
+color:`rgb(${data[i]},${data[i+1]},${data[i+2]})`,
+
+char:["0","1","0","1","7","9","{","}","/","*","<",">"][Math.floor(Math.random()*12)],
+
+delay:Math.random()*3500,
+
+duration:7500+Math.random()*3500,
+
+size:Math.max(7,12*scale)
+
+});
+
+}
+
+}
+
+}
+
+}
+
+function animate(time){
+
+if(!startTime)startTime=time;
+
+ctx.fillStyle="rgba(2,2,2,0.13)";
+
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+let total=0;
+
+particles.forEach(p=>{
+
+let elapsed=time-startTime-p.delay;
+
+let progress=Math.max(0,Math.min(1,elapsed/p.duration));
+
+total=Math.max(total,p.delay+p.duration);
+
+let ease=1-Math.pow(1-progress,3);
+
+let x=p.sx+(p.x-p.sx)*ease;
+
+let y=p.sy+(p.y-p.sy)*ease;
+
+ctx.globalAlpha=Math.min(1,progress*1.5);
+
+ctx.fillStyle=p.color;
+
+ctx.font=`${p.size}px monospace`;
+
+ctx.fillText(p.char,x,y);
+
+});
+
+ctx.globalAlpha=1;
+
+let textProgress=Math.max(0,Math.min(1,(time-startTime-total-500)/1800));
+
+if(textProgress>0){
+
+ctx.save();
+
+ctx.globalAlpha=textProgress;
+
+ctx.textAlign="center";
+
+ctx.shadowColor="#ff183c";
+
+ctx.shadowBlur=18;
+
+ctx.fillStyle="#ff294b";
+
+ctx.font=`bold ${Math.max(19,27*Math.min(canvas.width/500,1))}px Georgia`;
+
+ctx.fillText("SENİ SEVİYORUM HAVİN",canvas.width/2,canvas.height-65);
+
+ctx.font="22px Georgia";
+
+ctx.fillText("♥",canvas.width/2,canvas.height-32);
+
+ctx.restore();
+
+}
+
+if(textProgress<1)animationId=requestAnimationFrame(animate);
+
+}
+
+function start(){
+
+if(animationId)cancelAnimationFrame(animationId);
+
+resize();createParticles();startTime=0;
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+animationId=requestAnimationFrame(animate);
+
+}
+
+rose();start();
+
+window.addEventListener("resize",start);
+
+</script>
+
+</body>
+
+</html>
